@@ -13,6 +13,8 @@ import android.graphics.PathMeasure;
 import android.graphics.PointF;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -27,6 +29,7 @@ import java.util.List;
 
 /**
  * Created by liangfeizc on 6/28/15.
+ * Updated by hkq325800 in 2017.3
  */
 public class RubberIndicator extends RelativeLayout {
     private static final String TAG = "RubberIndicator";
@@ -95,8 +98,9 @@ public class RubberIndicator extends RelativeLayout {
     private int mFocusPosition = -1;
     private int mBezierCurveAnchorDistance;
     private int value;
-    private int tempFocusPos;
+//    private int tempFocusPos;
     private int mCount;
+    private long animDuration;
 
     public RubberIndicator(Context context) {
         super(context);
@@ -125,6 +129,7 @@ public class RubberIndicator extends RelativeLayout {
         mSmallCircleColor = styledAttributes.getColor(R.styleable.RubberIndicator_smallCircleColor, DEFAULT_SMALL_CIRCLE_COLOR);
         mLargeCircleColor = styledAttributes.getColor(R.styleable.RubberIndicator_largeCircleColor, DEFAULT_LARGE_CIRCLE_COLOR);
         mOuterCircleColor = styledAttributes.getColor(R.styleable.RubberIndicator_outerCircleColor, DEFAULT_OUTER_CIRCLE_COLOR);
+        animDuration = styledAttributes.getInt(R.styleable.RubberIndicator_animDuration, 500);
         styledAttributes.recycle();
 
         /** Initialize views */
@@ -134,10 +139,29 @@ public class RubberIndicator extends RelativeLayout {
 
         // Apply outer color to outerCircle and background shape
         final View containerWrapper = rootView.findViewById(R.id.container_wrapper);
-        containerWrapper.post(new Runnable() {
+        //set outerCircle color
+        mOuterCircle.setColor(mOuterCircleColor);
+        GradientDrawable shape = (GradientDrawable) containerWrapper.getBackground();
+        shape.setColor(mOuterCircleColor);
+
+        /** animators */
+        mPvhScaleX = PropertyValuesHolder.ofFloat("scaleX", 1, 0.8f, 1);
+        mPvhScaleY = PropertyValuesHolder.ofFloat("scaleY", 1, 0.8f, 1);
+        mPvhScale = PropertyValuesHolder.ofFloat("scaleY", 1, 0.5f, 1);
+        mPvhRotation = PropertyValuesHolder.ofFloat("rotation", 0);
+
+        mSmallCirclePath = new Path();
+
+        mPendingAnimations = new LinkedList<>();
+
+        /** circle view list */
+        mCircleViews = new ArrayList<>();
+        rootView.post(new Runnable() {
             @Override
             public void run() {
+                /** values */
                 value = getLayoutParams().height;
+
                 containerWrapper.getLayoutParams().height = value / 2;//40/80
                 mSmallCircleRadius = dp2px(SMALL_CIRCLE_RADIUS) * value / 240;//45/80 - >
                 mLargeCircleRadius = dp2px(LARGE_CIRCLE_RADIUS) * value / 240;//75/80
@@ -153,38 +177,18 @@ public class RubberIndicator extends RelativeLayout {
                     mCircleViews.clear();
 
                     int i = 0;
-                    for (; i < tempFocusPos; i++) {
+                    for (; i < mFocusPosition; i++) {
                         addSmallCircle();
                     }
 
                     addLargeCircle();
 
-                    for (i = tempFocusPos + 1; i < mCount; i++) {
+                    for (i = mFocusPosition + 1; i < mCount; i++) {
                         addSmallCircle();
                     }
                 }
-
-                mFocusPosition = tempFocusPos;
             }
         });
-        mOuterCircle.setColor(mOuterCircleColor);
-        GradientDrawable shape = (GradientDrawable) containerWrapper.getBackground();
-        shape.setColor(mOuterCircleColor);
-
-        /** values */
-
-        /** animators */
-        mPvhScaleX = PropertyValuesHolder.ofFloat("scaleX", 1, 0.8f, 1);
-        mPvhScaleY = PropertyValuesHolder.ofFloat("scaleY", 1, 0.8f, 1);
-        mPvhScale = PropertyValuesHolder.ofFloat("scaleY", 1, 0.5f, 1);
-        mPvhRotation = PropertyValuesHolder.ofFloat("rotation", 0);
-
-        mSmallCirclePath = new Path();
-
-        mPendingAnimations = new LinkedList<>();
-
-        /** circle view list */
-        mCircleViews = new ArrayList<>();
     }
 
     @Override
@@ -197,11 +201,22 @@ public class RubberIndicator extends RelativeLayout {
         }
     }
 
-    public void setCount(int count) {
+    public long getAnimDuration() {
+        return animDuration;
+    }
+
+    public RubberIndicator setAnimDuration(long animDuration) {
+        this.animDuration = animDuration;
+        return this;
+    }
+
+    public RubberIndicator setCount(int count) {
         if (mFocusPosition == -1) {
             mFocusPosition = 0;
         }
-        setCount(count, mFocusPosition);
+        mCount = count;
+        return this;
+//        setCount(count, mFocusPosition);
     }
 
     /**
@@ -210,8 +225,16 @@ public class RubberIndicator extends RelativeLayout {
      *
      * @param pos the focus position
      */
-    public void setFocusPosition(final int pos) {
+    public RubberIndicator setFocusPosition(final int pos) {
+        if (mCount < 2) {
+            throw new IllegalArgumentException("count must be greater than 2");
+        }
+        if (pos >= mCount) {
+            throw new IllegalArgumentException("focus position must be less than count");
+        }
+//        tempFocusPos = pos;
         mFocusPosition = pos;
+        return this;
     }
 
     public void setCount(int count, int focusPos) {
@@ -223,11 +246,13 @@ public class RubberIndicator extends RelativeLayout {
             throw new IllegalArgumentException("focus position must be less than count");
         }
 
-        tempFocusPos = focusPos;
+        mFocusPosition = focusPos;
         mCount = count;
     }
 
     public int getFocusPosition() {
+//        if(mFocusPosition == -1)
+//            return tempFocusPos;
         return mFocusPosition;
     }
 
@@ -303,7 +328,7 @@ public class RubberIndicator extends RelativeLayout {
         mCircleViews.set(nextPos, circleView);
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+//    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void move(final boolean toRight) {
         final int nextPos = getNextPosition(toRight);
         if (nextPos == -1) return;
@@ -364,7 +389,7 @@ public class RubberIndicator extends RelativeLayout {
         mAnim.play(smallCircleAnim)
                 .with(otherAnim).with(largeCircleAnim).with(outerCircleAnim);
         mAnim.setInterpolator(new AccelerateDecelerateInterpolator());
-        mAnim.setDuration(500);
+        mAnim.setDuration(animDuration);
         mAnim.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
@@ -408,5 +433,29 @@ public class RubberIndicator extends RelativeLayout {
         void onMovedToLeft();
 
         void onMovedToRight();
+    }
+
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Parcelable p = super.onSaveInstanceState();
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("superState", p);
+        bundle.putInt("count", mCount);
+        bundle.putInt("focus", mFocusPosition);
+        return bundle;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        if (state instanceof Bundle) {
+            Bundle bundle = (Bundle) state;
+            mCount = bundle.getInt("count");
+            mFocusPosition = bundle.getInt("focus");
+            setCount(mCount);
+            setFocusPosition(mFocusPosition);
+//            setCount(mCount, mFocusPosition);
+            state = bundle.getParcelable("superState");
+        }
+        super.onRestoreInstanceState(state);
     }
 }

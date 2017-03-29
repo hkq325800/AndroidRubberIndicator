@@ -4,5 +4,6 @@
         <attr name="smallCircleColor" format="color"/>
         <attr name="largeCircleColor" format="color"/>
         <attr name="outerCircleColor" format="color"/>
+        <attr name="animDuration" format="integer"/>
     </declare-styleable>
 </resources>
