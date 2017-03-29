@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity
             mRubberVP.setCount(vpCount, 2);
         }
         mRubberView.setOnMoveListener(this);
-        mRubberView.setAnimDuration(200);
+        mRubberView.setAnimDuration(600);
         mRubberVP.setOnMoveListener(this);
         updateFocusPosition();
         //2是初始位置

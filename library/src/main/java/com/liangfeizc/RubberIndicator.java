@@ -98,7 +98,6 @@ public class RubberIndicator extends RelativeLayout {
     private int mFocusPosition = -1;
     private int mBezierCurveAnchorDistance;
     private int value;
-//    private int tempFocusPos;
     private int mCount;
     private long animDuration;
 
@@ -232,7 +231,6 @@ public class RubberIndicator extends RelativeLayout {
         if (pos >= mCount) {
             throw new IllegalArgumentException("focus position must be less than count");
         }
-//        tempFocusPos = pos;
         mFocusPosition = pos;
         return this;
     }
@@ -251,8 +249,6 @@ public class RubberIndicator extends RelativeLayout {
     }
 
     public int getFocusPosition() {
-//        if(mFocusPosition == -1)
-//            return tempFocusPos;
         return mFocusPosition;
     }
 
@@ -328,7 +324,7 @@ public class RubberIndicator extends RelativeLayout {
         mCircleViews.set(nextPos, circleView);
     }
 
-//    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void move(final boolean toRight) {
         final int nextPos = getNextPosition(toRight);
         if (nextPos == -1) return;

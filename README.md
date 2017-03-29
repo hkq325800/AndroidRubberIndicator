@@ -3,15 +3,13 @@
 
 [原项目地址](https://github.com/LyndonChin/AndroidRubberIndicator)
 
-原来的控件很不完善，只能够修改三个颜色，且实现的效果与效果图不太相符，我的目标是开放更多的可配置项并且达到根据高度等比例缩放的效果。
+原来的控件很不完善，只能够修改三个颜色，且实现的效果与效果图不太相符，
+我的目标是开放更多的可配置项并且达到根据高度等比例缩放的效果。
 
-
-
-[![Join the chat at https://gitter.im/LyndonChin/AndroidRubberIndicator](https://badges.gitter.im/LyndonChin/AndroidRubberIndicator.svg)](https://gitter.im/LyndonChin/AndroidRubberIndicator?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 A rubber indicator for ViewPager
 
-<img src="https://d13yacurqjgara.cloudfront.net/users/303234/screenshots/2090803/pageindicator.gif" width="400px" height="300px" />
+<img src="https://github.com/hkq325800/AppRelease/blob/master/art/AndroidRubberIndicator_1.gif?raw=true" width="270px" height="480px" />
 
 * Designed by [Valentyn Khenkin](https://dribbble.com/shots/2090803-Rubber-Indicator?list=searches&tag=indicator&offset=7)
 * [Here](http://codepen.io/machycek/full/eNvyjb/) is the CSS version
@@ -42,11 +40,6 @@ public interface OnMoveListener {
 	void onMovedToRight();
 }
 ```
-
-## Me
-
-* [weibo](http://weibo.com/liangfeizc)
-* [twitter](https://twitter.com/JpRyouhi)
 
 ## License
 
